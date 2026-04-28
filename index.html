@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>منصة بَيِّنَة</title>
+<title>منصة بَيِّنَة - Legal SaaS</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600&family=Tajawal:wght@400;500&display=swap" rel="stylesheet">
 
@@ -44,12 +44,6 @@ body {
   font-weight:bold;
 }
 
-.chat-list {
-  margin-top:20px;
-  flex:1;
-  overflow:auto;
-}
-
 /* Main */
 .main {
   flex:1;
@@ -69,6 +63,7 @@ body {
   margin:10px 0;
   border-radius:10px;
   white-space:pre-wrap;
+  line-height:1.8;
 }
 
 .user {
@@ -129,29 +124,18 @@ textarea {
   <div class="chat" id="chat"></div>
 
   <div class="input-box">
-    <textarea id="input" rows="2" placeholder="اكتب سؤالك القانوني..."></textarea>
+    <textarea id="input" rows="2" placeholder="اكتب وقائع القضية هنا..."></textarea>
     <button class="send-btn" onclick="sendMessage()">إرسال</button>
   </div>
 
 </div>
 
 <script>
-/* ================= CONFIG ================= */
-const GROQ_API_KEY = "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";
 
-/* ================= SYSTEM PROMPT ================= */
-const SYSTEM_PROMPT = `
-أنت مستشار قانوني سعودي.
-
-التزم:
-- الأنظمة السعودية المحدثة
-- تحليل دقيق
-
-قسم الرد إلى:
-1) الوصف النظامي
-2) المواد القانونية ذات الصلة
-3) التوصية
-`;
+/* ================= BACKEND CONFIG (IMPORTANT) ================= */
+// هذا هو الـ SaaS Backend وليس Groq مباشرة
+const API_URL = "http://localhost:3001/chat";
+const TOKEN = "PUT_JWT_TOKEN_HERE";
 
 /* ================= STATE ================= */
 let messages = [];
@@ -178,6 +162,7 @@ function addMessage(text, type="user") {
 
     actions.appendChild(copyBtn);
     actions.appendChild(printBtn);
+
     div.appendChild(actions);
   }
 
@@ -185,6 +170,7 @@ function addMessage(text, type="user") {
   document.getElementById("chat").scrollTop = 999999;
 }
 
+/* ================= NEW CHAT ================= */
 function newChat() {
   messages = [];
   document.getElementById("chat").innerHTML = "";
@@ -193,12 +179,13 @@ function newChat() {
 /* ================= PRINT ================= */
 function printText(text) {
   const w = window.open("", "", "width=800,height=600");
-  w.document.write(`<pre style="font-family:Cairo">${text}</pre>`);
+  w.document.write(`<pre style="font-family:Cairo; white-space:pre-wrap">${text}</pre>`);
   w.print();
 }
 
-/* ================= SEND ================= */
+/* ================= SEND TO SAAS BACKEND (RAG SYSTEM) ================= */
 async function sendMessage() {
+
   const input = document.getElementById("input");
   const text = input.value.trim();
   if(!text) return;
@@ -206,55 +193,54 @@ async function sendMessage() {
   addMessage(text, "user");
   input.value = "";
 
-  messages.push({role:"user", content:text});
+  messages.push({ role:"user", content:text });
 
   try {
-    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+
+    const response = await fetch(API_URL, {
       method:"POST",
       headers:{
-        "Authorization":`Bearer ${GROQ_API_KEY}`,
-        "Content-Type":"application/json"
+        "Content-Type":"application/json",
+        "Authorization":"Bearer " + TOKEN
       },
-      body:JSON.stringify({
-        model:"llama-3.3-70b-versatile",
-        messages:[
-          {role:"system", content:SYSTEM_PROMPT},
-          ...messages
-        ],
-        temperature:0.3
+      body: JSON.stringify({
+        messages: messages
       })
     });
 
     const data = await response.json();
 
-    console.log("GROQ RESPONSE:", data);
+    let reply = data.reply || "لم يتم الحصول على رد";
 
-    let reply = "";
+    /* ================= FORMATTED OUTPUT ================= */
+    const formattedReply = `
+⚖️ مسودة قانونية تحليلية
 
-    if(data.choices && data.choices.length > 0) {
-      reply = data.choices[0].message.content;
-    }
+────────────────────
+${reply}
 
-    if(!reply) {
-      reply = "⚠️ لم يتم الحصول على رد من النموذج";
-    }
+────────────────────
+⚠️ إخلاء المسؤولية:
+هذه مسودة تحليلية أولية مبنية على المواد النظامية المتاحة داخل النظام فقط، ولا تُعد رأيًا قانونيًا نهائيًا، ويجب مراجعتها من قبل مختص قانوني قبل الاعتماد.
+`;
 
-    addMessage(reply, "ai");
+    addMessage(formattedReply, "ai");
 
-    messages.push({role:"assistant", content:reply});
+    messages.push({ role:"assistant", content: reply });
 
   } catch (error) {
-    addMessage("❌ خطأ في الاتصال بـ Groq", "ai");
+    addMessage("❌ خطأ في الاتصال بالنظام القانوني", "ai");
   }
 }
 
-/* ================= SHORTCUT ================= */
+/* ================= ENTER KEY ================= */
 document.getElementById("input").addEventListener("keydown", function(e){
   if(e.key === "Enter" && !e.shiftKey){
     e.preventDefault();
     sendMessage();
   }
 });
+
 </script>
 
 </body>
