@@ -1,83 +1,170 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <title>منصة بَيِّنَة | النسخة الاحترافية</title>
-    <style>
-        :root { --primary: #1a3a5f; --gold: #c9a66b; }
-        body { font-family: sans-serif; background: #f4f7f9; display: flex; height: 100vh; margin: 0; }
-        .sidebar { width: 250px; background: var(--primary); color: white; padding: 20px; }
-        .main { flex: 1; display: flex; flex-direction: column; background: white; }
-        #chat { flex: 1; overflow-y: auto; padding: 20px; }
-        .msg { padding: 10px 15px; border-radius: 10px; margin-bottom: 10px; max-width: 80%; }
-        .ai { background: #eef2f7; border-right: 4px solid var(--gold); align-self: flex-start; }
-        .user { background: var(--primary); color: white; align-self: flex-end; margin-right: auto; }
-        .input-area { padding: 20px; border-top: 1px solid #ddd; display: flex; gap: 10px; }
-        textarea { flex: 1; height: 50px; border-radius: 5px; padding: 10px; }
-        button { background: var(--primary); color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 5px; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>منصة بَيِّنَة</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Cairo&family=Tajawal&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --primary:#1a3a5f;
+  --gold:#c9a66b;
+  --bg:#f8f9fa;
+}
+
+body {
+  margin:0;
+  font-family:'Cairo','Tajawal',sans-serif;
+  background:var(--bg);
+  display:flex;
+  height:100vh;
+}
+
+.sidebar {
+  width:250px;
+  background:var(--primary);
+  color:white;
+  padding:15px;
+}
+
+.main {
+  flex:1;
+  display:flex;
+  flex-direction:column;
+}
+
+.chat {
+  flex:1;
+  overflow:auto;
+  padding:20px;
+}
+
+.message {
+  max-width:70%;
+  padding:15px;
+  margin:10px 0;
+  border-radius:10px;
+  white-space:pre-wrap;
+}
+
+.user {
+  background:var(--primary);
+  color:white;
+  margin-left:auto;
+}
+
+.ai {
+  background:white;
+}
+
+.input-box {
+  display:flex;
+  padding:10px;
+  background:white;
+}
+
+textarea {
+  flex:1;
+  padding:10px;
+  font-size:16px;
+}
+
+button {
+  background:var(--gold);
+  border:none;
+  padding:10px;
+  cursor:pointer;
+}
+</style>
 </head>
+
 <body>
 
 <div class="sidebar">
-    <h2>بَيِّنَة ⚖️</h2>
-    <p>مستشارك القانوني السعودي</p>
+  <h2>بَيِّنَة</h2>
 </div>
 
 <div class="main">
-    <div id="chat" style="display: flex; flex-direction: column;">
-        <div class="msg ai">مرحباً بك.. كيف يمكنني مساعدتك نظاماً؟</div>
-    </div>
-    <div class="input-area">
-        <textarea id="userInput" placeholder="اكتبي الوقائع هنا..."></textarea>
-        <button onclick="sendRequest()">تحليل</button>
-    </div>
+  <div class="chat" id="chat"></div>
+
+  <div class="input-box">
+    <textarea id="input"></textarea>
+    <button onclick="send()">إرسال</button>
+  </div>
 </div>
 
 <script>
-async function sendRequest() {
-    const input = document.getElementById('userInput');
-    const chat = document.getElementById('chat');
-    const text = input.value.trim();
-    if(!text) return;
+const API_KEY = "AIzaSyDDnwx4f6TKJQXiK1LoAhBA37hBtaHlogw";
 
-    // إضافة رسالة المستخدم
-    const uDiv = document.createElement('div');
-    uDiv.className = 'msg user';
-    uDiv.innerText = text;
-    chat.appendChild(uDiv);
-    input.value = '';
+/* SYSTEM PROMPT */
+const SYSTEM_PROMPT = `
+أنت مستشار قانوني سعودي.
 
-    const aiDiv = document.createElement('div');
-    aiDiv.className = 'msg ai';
-    aiDiv.innerText = "⏳ جاري التحليل...";
-    chat.appendChild(aiDiv);
+حلل الإجابة إلى:
+1- الوصف النظامي
+2- المواد القانونية
+3- التوصية
 
-    try {
-        // الرابط الصحيح من التوثيق
-        const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
-        
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                // المصادقة الصحيحة عبر Header كما في الصورة
-                'x-goog-api-key': 'AIzaSyDDnwx4f6TKJQXiK1LoAhBA37hBtaHlogw' 
-            },
-            body: JSON.stringify({
-                contents: [{ parts: [{ text: "أنت مستشار قانوني سعودي، حلل: " + text }] }]
-            })
-        });
+التزم بالدقة ولا تؤلف.
+`;
 
-        const data = await response.json();
-        if(data.error) throw new Error(data.error.message);
-        
-        aiDiv.innerHTML = data.candidates[0].content.parts[0].text.replace(/\n/g, '<br>');
-    } catch (e) {
-        aiDiv.style.color = "red";
-        aiDiv.innerText = "❌ خطأ: " + e.message;
-    }
+function addMessage(text, type) {
+  const div = document.createElement("div");
+  div.className = "message " + type;
+  div.textContent = text;
+  document.getElementById("chat").appendChild(div);
 }
+
+async function send() {
+  const input = document.getElementById("input");
+  const text = input.value.trim();
+  if(!text) return;
+
+  addMessage(text, "user");
+  input.value = "";
+
+  try {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify({
+        contents:[
+          {
+            role:"user",
+            parts:[
+              {text: SYSTEM_PROMPT + "\n\nالسؤال: " + text}
+            ]
+          }
+        ],
+        generationConfig:{
+          temperature:0.3
+        }
+      })
+    });
+
+    const data = await res.json();
+
+    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "خطأ في الرد";
+
+    addMessage(reply, "ai");
+
+  } catch(e) {
+    addMessage("خطأ في الاتصال", "ai");
+  }
+}
+
+/* اختصار Enter */
+document.getElementById("input").addEventListener("keydown", function(e){
+  if(e.key === "Enter" && !e.shiftKey){
+    e.preventDefault();
+    send();
+  }
+});
 </script>
+
 </body>
 </html>
