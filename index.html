@@ -65,7 +65,10 @@
             const response = await result.response;
             loadingDiv.innerHTML = `<b>📋 النتيجة:</b><br><br>${response.text().replace(/\n/g, '<br>')}`;
         } catch (e) {
-            loadingDiv.innerHTML = "❌ خطأ في الاتصال: تأكدي من صحة المفتاح.";
+    loadingDiv.innerHTML = "❌ تفاصيل الخطأ: " + e.message;
+}
+
+
         } finally {
             btn.disabled = false;
             btn.innerText = "إعداد دراسة شاملة للمسودة";
