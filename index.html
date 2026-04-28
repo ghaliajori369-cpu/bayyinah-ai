@@ -156,3 +156,54 @@
 
 </body>
 </html>
+<script type="importmap">
+{ "imports": { "@google/generative-ai": "https://esm.run/@google/generative-ai" } }
+</script>
+
+<script type="module">
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
+// ملاحظة هامة: ضعي مفتاحك الجديد بدقة بين علامتي الاقتباس أدناه
+const API_KEY = "AIzaSyDDnwx4f6TKJQXiK1LoAhBA37hBtaHlogw"; 
+
+const genAI = new GoogleGenerativeAI(API_KEY);
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+const btn = document.getElementById('actionBtn');
+const input = document.getElementById('userInput');
+const displayArea = document.getElementById('display-area');
+
+btn.onclick = async () => {
+    const text = input.value.trim();
+    if (!text) return alert("فضلاً، وصّفي وقائع القضية أولاً.");
+
+    // تغيير حالة الزر أثناء التحميل
+    btn.disabled = true;
+    btn.innerText = "جاري التحليل النظامي...";
+
+    // إضافة فقرة التحميل في الشاشة
+    const loadingMsg = document.createElement('div');
+    loadingMsg.className = 'message ai-message loading';
+    loadingMsg.innerText = "⏳ جاري استحضار الأنظمة السعودية ذات العلاقة...";
+    displayArea.appendChild(loadingMsg);
+    displayArea.scrollTop = displayArea.scrollHeight;
+
+    try {
+        const prompt = "أنت مستشار قانوني سعودي خبير. حلل الوقائع التالية بدقة، واذكر الأنظمة السعودية والمواد القانونية المنطبقة عليها: " + text;
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const outputText = response.text();
+        
+        // عرض النتيجة النهائية
+        loadingMsg.classList.remove('loading');
+        loadingMsg.innerHTML = "<b>📋 التحليل القانوني:</b><br><br>" + outputText.replace(/\n/g, '<br>');
+    } catch (error) {
+        loadingMsg.innerText = "❌ حدث خطأ في الاتصال: " + error.message;
+        console.error(error);
+    } finally {
+        btn.disabled = false;
+        btn.innerText = "تحليل الوقائع نظاماً";
+        displayArea.scrollTop = displayArea.scrollHeight;
+    }
+};
+</script>
