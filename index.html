@@ -3,207 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>بينة - المستشار القانوني الذكي</title>
+    <title>بينة - المستشار الذكي</title>
     <style>
-        /* إعدادات الخط والألوان */
-        :root {
-            --primary-color: #1a3a5f; /* أزرق ملكي قانوني */
-            --accent-color: #c9a66b;  /* ذهبي خفيف */
-            --bg-color: #f8f9fa;
-            --text-color: #333;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-
-        /* الحاوية الرئيسية للتطبيق */
-        .app-container {
-            width: 100%;
-            max-width: 480px;
-            height: 90vh;
-            background: white;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            border-radius: 20px;
-            overflow: hidden;
-            margin: 10px;
-        }
-
-        /* الرأس (Header) */
-        .header {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 20px;
-            text-align: center;
-            border-bottom: 4px solid var(--accent-color);
-        }
-
-        .header h1 {
-            margin: 0;
-            font-size: 1.4rem;
-            font-weight: bold;
-        }
-
-        .header p {
-            margin: 5px 0 0;
-            font-size: 0.85rem;
-            opacity: 0.8;
-        }
-
-        /* منطقة عرض النتائج */
-        #display-area {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-            background-color: #ffffff;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .message {
-            padding: 12px 15px;
-            border-radius: 12px;
-            font-size: 0.95rem;
-            line-height: 1.6;
-            max-width: 90%;
-        }
-
-        .ai-message {
-            background-color: #f1f4f8;
-            color: var(--text-color);
-            align-self: flex-start;
-            border-right: 4px solid var(--primary-color);
-        }
-
-        /* منطقة الإدخال */
-        .input-area {
-            padding: 15px;
-            background: #fff;
-            border-top: 1px solid #eee;
-        }
-
-        textarea {
-            width: 100%;
-            height: 100px;
-            border: 1px solid #ddd;
-            border-radius: 12px;
-            padding: 12px;
-            font-size: 1rem;
-            resize: none;
-            box-sizing: border-box;
-            outline: none;
-            transition: border 0.3s;
-        }
-
-        textarea:focus {
-            border-color: var(--primary-color);
-        }
-
-        button {
-            width: 100%;
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 14px;
-            border-radius: 12px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            margin-top: 10px;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        button:active {
-            transform: scale(0.98);
-            background-color: #122a46;
-        }
-
-        /* تأثيرات التحميل */
-        .loading {
-            font-style: italic;
-            color: #777;
-        }
+        :root { --primary: #1a3a5f; --accent: #c9a66b; }
+        body { font-family: sans-serif; background: #f4f7f9; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .app-container { width: 95%; max-width: 500px; background: white; height: 90vh; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); display: flex; flex-direction: column; overflow: hidden; }
+        .header { background: var(--primary); color: white; padding: 20px; text-align: center; border-bottom: 4px solid var(--accent); }
+        #chat-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; background: #fafafa; }
+        .bubble { padding: 12px 16px; border-radius: 15px; font-size: 0.95rem; line-height: 1.6; max-width: 85%; }
+        .ai { background: white; border-right: 5px solid var(--primary); align-self: flex-start; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .input-area { padding: 20px; border-top: 1px solid #eee; }
+        textarea { width: 100%; height: 80px; border: 1px solid #ddd; border-radius: 12px; padding: 12px; resize: none; box-sizing: border-box; font-family: inherit; }
+        button { width: 100%; background: var(--primary); color: white; border: none; padding: 14px; border-radius: 12px; margin-top: 10px; cursor: pointer; font-weight: bold; }
+        button:disabled { background: #ccc; }
     </style>
 </head>
 <body>
 
-    <div class="app-container">
-        <div class="header">
-            <h1>⚖️ منصة بَيّنَة</h1>
-            <p>المساعد الذكي لتحليل الأنظمة السعودية</p>
-        </div>
-
-        <div id="display-area">
-            <div class="message ai-message">
-                مرحباً بكِ.. يرجى تزويدي بوقائع القضية أو النص النظامي المراد تحليله.
-            </div>
-        </div>
-
-        <div class="input-area">
-            <textarea id="userInput" placeholder="اكتبي الوقائع هنا..."></textarea>
-            <button id="actionBtn">تحليل الوقائع نظاماً</button>
-        </div>
+<div class="app-container">
+    <div class="header">⚖️ منصة بَيّنَة</div>
+    <div id="chat-area">
+        <div class="bubble ai">مرحباً بكِ.. ضعي وقائع القضية هنا لتحليلها نظاماً.</div>
     </div>
-
-</body>
-</html>
-<script type="importmap">
-{ "imports": { "@google/generative-ai": "https://esm.run/@google/generative-ai" } }
-</script>
+    <div class="input-area">
+        <textarea id="userInput" placeholder="اكتبي الوقائع هنا..."></textarea>
+        <button id="sendBtn">تحليل الوقائع نظاماً</button>
+    </div>
+</div>
 
 <script type="module">
-import { GoogleGenerativeAI } from "@google/generative-ai";
+// استخدمنا هنا رابطاً مباشراً للمكتبة لضمان عدم حدوث تعارض
+import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
 
-// ملاحظة هامة: ضعي مفتاحك الجديد بدقة بين علامتي الاقتباس أدناه
-const API_KEY = "AIzaSyDDnwx4f6TKJQXiK1LoAhBA37hBtaHlogw"; 
+// ⚠️ ضعي مفتاحك الجديد هنا بدقة
+const API_KEY = "ضعي_مفتاحك_هنا"; 
 
 const genAI = new GoogleGenerativeAI(API_KEY);
+
+// تحديد النموذج بنسخة مستقرة جداً
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-const btn = document.getElementById('actionBtn');
+const btn = document.getElementById('sendBtn');
 const input = document.getElementById('userInput');
-const displayArea = document.getElementById('display-area');
+const chat = document.getElementById('chat-area');
 
 btn.onclick = async () => {
     const text = input.value.trim();
-    if (!text) return alert("فضلاً، وصّفي وقائع القضية أولاً.");
+    if (!text) return;
 
-    // تغيير حالة الزر أثناء التحميل
     btn.disabled = true;
-    btn.innerText = "جاري التحليل النظامي...";
+    btn.innerText = "جاري التحليل...";
 
-    // إضافة فقرة التحميل في الشاشة
-    const loadingMsg = document.createElement('div');
-    loadingMsg.className = 'message ai-message loading';
-    loadingMsg.innerText = "⏳ جاري استحضار الأنظمة السعودية ذات العلاقة...";
-    displayArea.appendChild(loadingMsg);
-    displayArea.scrollTop = displayArea.scrollHeight;
+    const msg = document.createElement('div');
+    msg.className = 'bubble ai';
+    msg.innerText = "⏳ جاري المعالجة...";
+    chat.appendChild(msg);
 
     try {
-        const prompt = "أنت مستشار قانوني سعودي خبير. حلل الوقائع التالية بدقة، واذكر الأنظمة السعودية والمواد القانونية المنطبقة عليها: " + text;
+        // نطلب من الذكاء الاصطناعي الرد بصفته محامي سعودي
+        const prompt = "أنت مستشار قانوني سعودي. حلل الوقائع التالية واذكر الأنظمة والمواد ذات العلاقة: " + text;
         const result = await model.generateContent(prompt);
         const response = await result.response;
-        const outputText = response.text();
-        
-        // عرض النتيجة النهائية
-        loadingMsg.classList.remove('loading');
-        loadingMsg.innerHTML = "<b>📋 التحليل القانوني:</b><br><br>" + outputText.replace(/\n/g, '<br>');
-    } catch (error) {
-        loadingMsg.innerText = "❌ حدث خطأ في الاتصال: " + error.message;
-        console.error(error);
+        msg.innerHTML = "<b>📋 التحليل:</b><br><br>" + response.text().replace(/\n/g, '<br>');
+    } catch (e) {
+        msg.innerText = "❌ خطأ: " + e.message;
     } finally {
         btn.disabled = false;
         btn.innerText = "تحليل الوقائع نظاماً";
-        displayArea.scrollTop = displayArea.scrollHeight;
+        chat.scrollTop = chat.scrollHeight;
     }
 };
 </script>
+
+</body>
+</html>
