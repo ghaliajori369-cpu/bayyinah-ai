@@ -66,7 +66,6 @@ btn.onclick = async () => {
     try {
         // تم تصحيح الرابط هنا ليعمل مع gemini-1.5-flash مباشرة
         const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
-        
         const response = await fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
