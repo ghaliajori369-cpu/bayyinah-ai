@@ -3,75 +3,156 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>بينة - التحليل القانوني</title>
+    <title>بينة - المستشار القانوني الذكي</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; box-sizing: border-box; }
-        .app-container { width: 100%; max-width: 500px; background: white; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); overflow: hidden; display: flex; flex-direction: column; }
-        .header { background: #1a3a5f; color: white; padding: 20px; text-align: center; font-weight: bold; font-size: 1.2rem; }
-        .content { padding: 20px; }
-        textarea { width: 100%; height: 150px; border: 1px solid #ddd; border-radius: 10px; padding: 12px; font-size: 1rem; resize: none; box-sizing: border-box; margin-bottom: 15px; font-family: inherit; }
-        button { width: 100%; background: #1a3a5f; color: white; border: none; padding: 15px; border-radius: 10px; cursor: pointer; font-size: 1rem; font-weight: bold; transition: 0.3s; }
-        button:disabled { background: #ccc; }
-        #result { margin-top: 20px; padding: 15px; border-radius: 10px; font-size: 0.95rem; line-height: 1.6; white-space: pre-wrap; display: none; }
-        .error { background: #fee; color: #d9534f; border: 1px solid #fcc; }
-        .success { background: #f0f9ff; color: #333; border: 1px solid #bae6fd; }
+        /* إعدادات الخط والألوان */
+        :root {
+            --primary-color: #1a3a5f; /* أزرق ملكي قانوني */
+            --accent-color: #c9a66b;  /* ذهبي خفيف */
+            --bg-color: #f8f9fa;
+            --text-color: #333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        /* الحاوية الرئيسية للتطبيق */
+        .app-container {
+            width: 100%;
+            max-width: 480px;
+            height: 90vh;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border-radius: 20px;
+            overflow: hidden;
+            margin: 10px;
+        }
+
+        /* الرأس (Header) */
+        .header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 4px solid var(--accent-color);
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 1.4rem;
+            font-weight: bold;
+        }
+
+        .header p {
+            margin: 5px 0 0;
+            font-size: 0.85rem;
+            opacity: 0.8;
+        }
+
+        /* منطقة عرض النتائج */
+        #display-area {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background-color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            padding: 12px 15px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            max-width: 90%;
+        }
+
+        .ai-message {
+            background-color: #f1f4f8;
+            color: var(--text-color);
+            align-self: flex-start;
+            border-right: 4px solid var(--primary-color);
+        }
+
+        /* منطقة الإدخال */
+        .input-area {
+            padding: 15px;
+            background: #fff;
+            border-top: 1px solid #eee;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100px;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            padding: 12px;
+            font-size: 1rem;
+            resize: none;
+            box-sizing: border-box;
+            outline: none;
+            transition: border 0.3s;
+        }
+
+        textarea:focus {
+            border-color: var(--primary-color);
+        }
+
+        button {
+            width: 100%;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-top: 10px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:active {
+            transform: scale(0.98);
+            background-color: #122a46;
+        }
+
+        /* تأثيرات التحميل */
+        .loading {
+            font-style: italic;
+            color: #777;
+        }
     </style>
 </head>
 <body>
 
-<div class="app-container">
-    <div class="header">⚖️ تطبيق بَيّنَة للتحليل القانوني</div>
-    <div class="content">
-        <textarea id="userInput" placeholder="اكتبي وقائع القضية هنا..."></textarea>
-        <button id="analyzeBtn">تحليل الوقائع الآن</button>
-        <div id="result"></div>
+    <div class="app-container">
+        <div class="header">
+            <h1>⚖️ منصة بَيّنَة</h1>
+            <p>المساعد الذكي لتحليل الأنظمة السعودية</p>
+        </div>
+
+        <div id="display-area">
+            <div class="message ai-message">
+                مرحباً بكِ.. يرجى تزويدي بوقائع القضية أو النص النظامي المراد تحليله.
+            </div>
+        </div>
+
+        <div class="input-area">
+            <textarea id="userInput" placeholder="اكتبي الوقائع هنا..."></textarea>
+            <button id="actionBtn">تحليل الوقائع نظاماً</button>
+        </div>
     </div>
-</div>
-
-<script type="importmap">
-{ "imports": { "@google/generative-ai": "https://esm.run/@google/generative-ai" } }
-</script>
-
-<script type="module">
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
-// ضعي مفتاحك الحقيقي هنا
-const API_KEY = "AIzaSyDDnwx4f6TKJQXiK1LoAhBA37hBtaHlogw"; 
-
-const genAI = new GoogleGenerativeAI(API_KEY);
-
-document.getElementById('analyzeBtn').onclick = async () => {
-    const input = document.getElementById('userInput').value;
-    const resultDiv = document.getElementById('result');
-    const btn = document.getElementById('analyzeBtn');
-
-    if (!input.trim()) return alert("يرجى كتابة نص التحليل أولاً");
-
-    btn.disabled = true;
-    btn.innerText = "جاري التحليل...";
-    resultDiv.style.display = "block";
-    resultDiv.className = "success";
-    resultDiv.innerText = "⏳ جاري المعالجة والاتصال بالخادم...";
-
-    try {
-        // استخدام إصدار محدد ونموذج مستقر
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
-        
-        const prompt = "أنت محامي سعودي، حلل الوقائع التالية نظاماً واذكر الأنظمة ذات العلاقة: " + input;
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        
-        resultDiv.innerText = response.text();
-    } catch (error) {
-        resultDiv.className = "error";
-        resultDiv.innerText = "❌ حدث خطأ:\n" + error.message;
-        console.error(error);
-    } finally {
-        btn.disabled = false;
-        btn.innerText = "تحليل الوقائع الآن";
-    }
-};
-</script>
 
 </body>
 </html>
