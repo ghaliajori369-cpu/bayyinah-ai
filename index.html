@@ -34,3 +34,214 @@ body {
 
 .sidebar h2 {
   margin:0 0 20px;
+}
+
+.new-chat {
+  background:var(--gold);
+  border:none;
+  padding:10px;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+/* Main */
+.main {
+  flex:1;
+  display:flex;
+  flex-direction:column;
+}
+
+.chat {
+  flex:1;
+  overflow:auto;
+  padding:20px;
+}
+
+.message {
+  max-width:75%;
+  padding:15px;
+  margin:10px 0;
+  border-radius:10px;
+  white-space:pre-wrap;
+  line-height:1.8;
+}
+
+.user {
+  background:var(--primary);
+  color:white;
+  margin-left:auto;
+}
+
+.ai {
+  background:white;
+  border:1px solid #ddd;
+}
+
+.actions {
+  margin-top:8px;
+}
+
+button.small {
+  font-size:12px;
+  padding:5px 8px;
+  margin-left:5px;
+  cursor:pointer;
+}
+
+/* Input */
+.input-box {
+  display:flex;
+  padding:10px;
+  background:white;
+  border-top:1px solid #ddd;
+}
+
+textarea {
+  flex:1;
+  padding:10px;
+  font-size:16px;
+  resize:none;
+}
+
+.send-btn {
+  background:var(--gold);
+  border:none;
+  padding:10px 15px;
+  cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="sidebar">
+  <h2>بَيِّنَة</h2>
+  <button class="new-chat" onclick="newChat()">+ محادثة جديدة</button>
+</div>
+
+<div class="main">
+
+  <div class="chat" id="chat"></div>
+
+  <div class="input-box">
+    <textarea id="input" rows="2" placeholder="اكتب وقائع القضية هنا..."></textarea>
+    <button class="send-btn" onclick="sendMessage()">إرسال</button>
+  </div>
+
+</div>
+
+<script>
+
+/* ================= BACKEND CONFIG (IMPORTANT) ================= */
+// هذا هو الـ SaaS Backend وليس Groq مباشرة
+const API_URL = "http://localhost:3001/chat";
+const TOKEN = "PUT_JWT_TOKEN_HERE";
+
+/* ================= STATE ================= */
+let messages = [];
+
+/* ================= UI ================= */
+function addMessage(text, type="user") {
+  const div = document.createElement("div");
+  div.className = "message " + type;
+  div.textContent = text;
+
+  if(type === "ai") {
+    const actions = document.createElement("div");
+    actions.className = "actions";
+
+    const copyBtn = document.createElement("button");
+    copyBtn.className = "small";
+    copyBtn.textContent = "نسخ";
+    copyBtn.onclick = () => navigator.clipboard.writeText(text);
+
+    const printBtn = document.createElement("button");
+    printBtn.className = "small";
+    printBtn.textContent = "طباعة";
+    printBtn.onclick = () => printText(text);
+
+    actions.appendChild(copyBtn);
+    actions.appendChild(printBtn);
+
+    div.appendChild(actions);
+  }
+
+  document.getElementById("chat").appendChild(div);
+  document.getElementById("chat").scrollTop = 999999;
+}
+
+/* ================= NEW CHAT ================= */
+function newChat() {
+  messages = [];
+  document.getElementById("chat").innerHTML = "";
+}
+
+/* ================= PRINT ================= */
+function printText(text) {
+  const w = window.open("", "", "width=800,height=600");
+  w.document.write(`<pre style="font-family:Cairo; white-space:pre-wrap">${text}</pre>`);
+  w.print();
+}
+
+/* ================= SEND TO SAAS BACKEND (RAG SYSTEM) ================= */
+async function sendMessage() {
+
+  const input = document.getElementById("input");
+  const text = input.value.trim();
+  if(!text) return;
+
+  addMessage(text, "user");
+  input.value = "";
+
+  messages.push({ role:"user", content:text });
+
+  try {
+
+    const response = await fetch(API_URL, {
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        "Authorization":"Bearer " + TOKEN
+      },
+      body: JSON.stringify({
+        messages: messages
+      })
+    });
+
+    const data = await response.json();
+
+    let reply = data.reply || "لم يتم الحصول على رد";
+
+    /* ================= FORMATTED OUTPUT ================= */
+    const formattedReply = `
+⚖️ مسودة قانونية تحليلية
+
+────────────────────
+${reply}
+
+────────────────────
+⚠️ إخلاء المسؤولية:
+هذه مسودة تحليلية أولية مبنية على المواد النظامية المتاحة داخل النظام فقط، ولا تُعد رأيًا قانونيًا نهائيًا، ويجب مراجعتها من قبل مختص قانوني قبل الاعتماد.
+`;
+
+    addMessage(formattedReply, "ai");
+
+    messages.push({ role:"assistant", content: reply });
+
+  } catch (error) {
+    addMessage("❌ خطأ في الاتصال بالنظام القانوني", "ai");
+  }
+}
+
+/* ================= ENTER KEY ================= */
+document.getElementById("input").addEventListener("keydown", function(e){
+  if(e.key === "Enter" && !e.shiftKey){
+    e.preventDefault();
+    sendMessage();
+  }
+});
+
+</script>
+
+</body>
+</html>
