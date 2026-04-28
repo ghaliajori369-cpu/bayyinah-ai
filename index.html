@@ -1,280 +1,388 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>منصة بَيِّنَة</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منصة بَيِّنَة | المستشار القانوني الذكي</title>
 
-<!-- Fonts -->
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600&family=Tajawal:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
 
-<style>
-:root {
-  --primary:#1a3a5f;
-  --gold:#c9a66b;
-  --bg:#f8f9fa;
-  --white:#ffffff;
-}
+    <style>
+        :root {
+            --primary: #1a3a5f;
+            --gold: #c9a66b;
+            --bg: #f4f7f9;
+            --white: #ffffff;
+            --text: #333;
+            --sidebar-width: 280px;
+        }
 
-* {
-  box-sizing:border-box;
-}
+        * {
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+        }
 
-body {
-  margin:0;
-  font-family:'Cairo','Tajawal',sans-serif;
-  background:var(--bg);
-  display:flex;
-  height:100vh;
-}
+        body {
+            margin: 0;
+            font-family: 'Cairo', 'Tajawal', sans-serif;
+            background: var(--bg);
+            display: flex;
+            height: 100vh;
+            color: var(--text);
+            overflow: hidden;
+        }
 
-/* Sidebar */
-.sidebar {
-  width:260px;
-  background:var(--primary);
-  color:white;
-  display:flex;
-  flex-direction:column;
-  padding:15px;
-}
+        /* القائمة الجانبية - Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--primary);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
 
-.sidebar h2 {
-  margin:0 0 20px;
-}
+        .sidebar h2 {
+            margin: 0 0 30px;
+            text-align: center;
+            font-size: 1.8rem;
+            border-bottom: 2px solid var(--gold);
+            padding-bottom: 10px;
+        }
 
-.new-chat {
-  background:var(--gold);
-  border:none;
-  padding:10px;
-  cursor:pointer;
-  font-weight:bold;
-}
+        .new-chat-btn {
+            background: var(--gold);
+            color: var(--primary);
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 1rem;
+            transition: 0.3s;
+            margin-bottom: 20px;
+        }
 
-.chat-list {
-  margin-top:20px;
-  flex:1;
-  overflow:auto;
-}
+        .new-chat-btn:hover {
+            background: #b38f55;
+            transform: translateY(-2px);
+        }
 
-.chat-item {
-  padding:8px;
-  border-bottom:1px solid rgba(255,255,255,0.1);
-  cursor:pointer;
-}
+        .sidebar-footer {
+            margin-top: auto;
+            font-size: 0.85rem;
+            opacity: 0.8;
+            text-align: center;
+            line-height: 1.6;
+        }
 
-/* Main */
-.main {
-  flex:1;
-  display:flex;
-  flex-direction:column;
-}
+        /* المنطقة الرئيسية - Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #fdfdfd;
+            position: relative;
+        }
 
-/* Chat */
-.chat {
-  flex:1;
-  overflow:auto;
-  padding:20px;
-}
+        /* منطقة الدردشة */
+        #chat-window {
+            flex: 1;
+            overflow-y: auto;
+            padding: 40px 10%;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
 
-.message {
-  max-width:75%;
-  padding:15px;
-  margin:10px 0;
-  border-radius:10px;
-  white-space:pre-wrap;
-}
+        .message {
+            max-width: 85%;
+            padding: 18px 22px;
+            border-radius: 15px;
+            line-height: 1.8;
+            font-size: 1.05rem;
+            position: relative;
+            animation: fadeIn 0.4s ease;
+        }
 
-.user {
-  background:var(--primary);
-  color:white;
-  margin-left:auto;
-}
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
-.ai {
-  background:white;
-  border:1px solid #ddd;
-}
+        .user-msg {
+            background: var(--primary);
+            color: white;
+            align-self: flex-end;
+            border-bottom-left-radius: 2px;
+        }
 
-/* Actions */
-.actions {
-  margin-top:8px;
-}
+        .ai-msg {
+            background: #f0f4f8;
+            color: var(--text);
+            align-self: flex-start;
+            border-bottom-right-radius: 2px;
+            border-right: 5px solid var(--gold);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
 
-button.small {
-  font-size:12px;
-  padding:5px 8px;
-  margin-left:5px;
-  cursor:pointer;
-}
+        /* أزرار التحكم في الرسالة */
+        .msg-actions {
+            margin-top: 12px;
+            display: flex;
+            gap: 10px;
+        }
 
-/* Input */
-.input-box {
-  display:flex;
-  padding:10px;
-  border-top:1px solid #ddd;
-  background:white;
-}
+        .action-btn {
+            background: #fff;
+            border: 1px solid #ddd;
+            padding: 5px 12px;
+            border-radius: 5px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            color: var(--primary);
+            transition: 0.2s;
+        }
 
-textarea {
-  flex:1;
-  resize:none;
-  padding:10px;
-  font-size:16px;
-  font-family:inherit;
-}
+        .action-btn:hover {
+            background: var(--gold);
+            color: white;
+            border-color: var(--gold);
+        }
 
-.send-btn {
-  background:var(--gold);
-  border:none;
-  padding:10px 15px;
-  cursor:pointer;
-}
-</style>
+        /* منطقة الإدخال */
+        .input-area {
+            padding: 30px 10%;
+            border-top: 1px solid #eee;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 15px;
+            align-items: flex-end;
+        }
+
+        textarea {
+            flex: 1;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 15px;
+            font-size: 1.1rem;
+            font-family: inherit;
+            resize: none;
+            min-height: 60px;
+            max-height: 200px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            border-color: var(--gold);
+        }
+
+        .send-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.3s;
+        }
+
+        .send-btn:hover:not(:disabled) {
+            background: var(--gold);
+            transform: scale(1.05);
+        }
+
+        .send-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .disclaimer {
+            font-size: 0.8rem;
+            color: #888;
+            text-align: center;
+        }
+
+        /* شريط التمرير */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+    </style>
 </head>
 
 <body>
 
-<!-- Sidebar -->
-<div class="sidebar">
-  <h2>بَيِّنَة</h2>
-  <button class="new-chat" onclick="newChat()">+ محادثة جديدة</button>
+    <div class="sidebar">
+        <h2>بَيِّنَة ⚖️</h2>
+        <button class="new-chat-btn" onclick="startNewChat()">+ محادثة جديدة</button>
+        
+        <div class="sidebar-footer">
+            منصة "بينة" للتحليل القانوني<br>
+            المملكة العربية السعودية<br>
+            <small>دعم: info@bayinah.sa</small>
+        </div>
+    </div>
 
-  <div class="chat-list" id="chatList"></div>
+    <div class="main-content">
+        <div id="chat-window">
+            <div class="message ai-msg">
+                مرحباً بكِ في منصة بَيِّنَة. أنا مستشارك الرقمي للأنظمة السعودية.
+                <br>كيف يمكنني مساعدتكِ في تحليل الوقائع اليوم؟
+            </div>
+        </div>
 
-  <div style="font-size:12px;">
-    دعم: support@bayinah.sa
-  </div>
-</div>
+        <div class="input-area">
+            <div class="input-wrapper">
+                <textarea id="userInput" rows="1" placeholder="اكتبي وقائع القضية هنا للتحليل النظامي..."></textarea>
+                <button class="send-btn" id="sendBtn" onclick="handleSend()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                </button>
+            </div>
+            <div class="disclaimer">هذا التحليل تقني بناءً على الأنظمة ولا يغني عن استشارة محامي مرخص.</div>
+        </div>
+    </div>
 
-<!-- Main -->
-<div class="main">
+    <script>
+        /* ===================== الإعدادات ===================== */
+        const API_KEY = "AIzaSyDDnwx4f6TKJQXiK1LoAhBA37hBtaHlogw"; // ⚠️  Groq الخاص بكِ هنا
 
-  <div class="chat" id="chat"></div>
+        const SYSTEM_INSTRUCTION = `أنت مستشار قانوني سعودي خبير ومحترف.
+        مهمتك: تحليل الوقائع المقدمة بناءً على الأنظمة السعودية فقط.
+        الأسلوب المطلوبة:
+        1. الوصف النظامي للواقعة.
+        2. المواد القانونية ذات الصلة (ذكر رقم المادة والاسم الكامل للنظام).
+        3. التوصية القانونية أو الإجراء المقترح.
+        كن دقيقاً جداً، واستخدم لغة قانونية رصينة ومبسطة.`;
 
-  <div class="input-box">
-    <textarea id="input" rows="2" placeholder="اكتب سؤالك القانوني..."></textarea>
-    <button class="send-btn" onclick="sendMessage()">إرسال</button>
-  </div>
+        /* ===================== البرمجة المنطقية ===================== */
+        const chatWindow = document.getElementById('chat-window');
+        const userInput = document.getElementById('userInput');
+        const sendBtn = document.getElementById('sendBtn');
+        let chatHistory = [];
 
-</div>
+        // دالة إضافة الرسائل للواجهة
+        function appendMessage(content, role) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${role === 'user' ? 'user-msg' : 'ai-msg'}`;
+            
+            // تنسيق النص (تحويل الأسطر الجديدة لـ <br>)
+            const formattedContent = content.replace(/\n/g, '<br>');
+            msgDiv.innerHTML = `<div>${formattedContent}</div>`;
 
-<script>
-/* ===================== CONFIG ===================== */
-const GROQ_API_KEY = "AIzaSyDDnwx4f6TKJQXiK1LoAhBA37hBtaHlogw"; // ⚠️ ضع مفتاحك هنا
+            if (role === 'ai') {
+                const actions = document.createElement('div');
+                actions.className = 'msg-actions';
+                actions.innerHTML = `
+                    <button class="action-btn" onclick="copyText(\`${content.replace(/`/g, '\\` ')}\`)">نسخ التحليل</button>
+                    <button class="action-btn" onclick="window.print()">طباعة</button>
+                `;
+                msgDiv.appendChild(actions);
+            }
 
-const SYSTEM_PROMPT = `
-أنت مساعد قانوني سعودي متخصص.
+            chatWindow.appendChild(msgDiv);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+            return msgDiv;
+        }
 
-التزم بالتالي:
-- الأنظمة السعودية المحدثة
-- لا تؤلف معلومات
-- حلل السؤال بدقة
+        // دالة الإرسال الرئيسية
+        async function handleSend() {
+            const text = userInput.value.trim();
+            if (!text || sendBtn.disabled) return;
 
-قسم الإجابة إلى:
-1) الوصف النظامي
-2) المواد القانونية ذات الصلة
-3) التوصية
+            // تعطيل الإدخال أثناء المعالجة
+            userInput.value = '';
+            userInput.style.height = 'auto';
+            sendBtn.disabled = true;
 
-اكتب بأسلوب رسمي واضح.
-`;
+            appendMessage(text, 'user');
+            chatHistory.push({ role: "user", content: text });
 
-/* ===================== STATE ===================== */
-let chats = [];
-let currentChat = [];
+            const loadingDiv = appendMessage("⏳ جاري استحضار النصوص النظامية وتحليل الوقائع...", 'ai');
 
-/* ===================== UI ===================== */
-function addMessage(text, type="user") {
-  const div = document.createElement("div");
-  div.className = "message " + type;
-  div.textContent = text;
+            try {
+                const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${API_KEY}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        model: "llama-3.3-70b-versatile",
+                        messages: [
+                            { role: "system", content: SYSTEM_INSTRUCTION },
+                            ...chatHistory
+                        ],
+                        temperature: 0.3
+                    })
+                });
 
-  if(type === "ai") {
-    const actions = document.createElement("div");
-    actions.className = "actions";
+                const data = await response.json();
+                
+                if (data.error) throw new Error(data.error.message);
 
-    const copyBtn = document.createElement("button");
-    copyBtn.className = "small";
-    copyBtn.textContent = "نسخ";
-    copyBtn.onclick = () => navigator.clipboard.writeText(text);
+                const aiReply = data.choices[0].message.content;
+                loadingDiv.innerHTML = `<b>📋 التحليل النظامي:</b><br><br>${aiReply.replace(/\n/g, '<br>')}`;
+                
+                // إضافة الأزرار بعد انتهاء التحميل
+                const actions = document.createElement('div');
+                actions.className = 'msg-actions';
+                actions.innerHTML = `
+                    <button class="action-btn" onclick="copyText(\`${aiReply.replace(/`/g, '\\` ')}\`)">نسخ التحليل</button>
+                    <button class="action-btn" onclick="window.print()">طباعة</button>
+                `;
+                loadingDiv.appendChild(actions);
 
-    const printBtn = document.createElement("button");
-    printBtn.className = "small";
-    printBtn.textContent = "طباعة";
-    printBtn.onclick = () => printText(text);
+                chatHistory.push({ role: "assistant", content: aiReply });
 
-    actions.appendChild(copyBtn);
-    actions.appendChild(printBtn);
+            } catch (error) {
+                loadingDiv.innerHTML = `<span style="color:red;">❌ عذراً، حدث خطأ في الاتصال: ${error.message}</span>`;
+                console.error(error);
+            } finally {
+                sendBtn.disabled = false;
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+            }
+        }
 
-    div.appendChild(actions);
-  }
+        // وظيفة النسخ
+        function copyText(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert("تم نسخ النص إلى الحافظة");
+            });
+        }
 
-  document.getElementById("chat").appendChild(div);
-  document.getElementById("chat").scrollTop = 999999;
-}
+        // بدء محادثة جديدة
+        function startNewChat() {
+            chatWindow.innerHTML = '<div class="message ai-msg">تم بدء جلسة تحليل جديدة. تفضلي بطرح تساؤلك القانوني.</div>';
+            chatHistory = [];
+        }
 
-function newChat() {
-  currentChat = [];
-  document.getElementById("chat").innerHTML = "";
-}
+        // التعديل التلقائي لارتفاع حقل النص
+        userInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
 
-/* ===================== PRINT ===================== */
-function printText(text) {
-  const w = window.open("", "", "width=800,height=600");
-  w.document.write(`<pre style="font-family:Cairo">${text}</pre>`);
-  w.print();
-}
-
-/* ===================== SEND ===================== */
-async function sendMessage() {
-  const input = document.getElementById("input");
-  const text = input.value.trim();
-  if(!text) return;
-
-  addMessage(text, "user");
-  input.value = "";
-
-  currentChat.push({role:"user", content:text});
-
-  const messages = [
-    {role:"system", content:SYSTEM_PROMPT},
-    ...currentChat
-  ];
-
-  try {
-    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method:"POST",
-      headers:{
-        "Authorization":`Bearer ${GROQ_API_KEY}`,
-        "Content-Type":"application/json; charset=UTF-8"
-      },
-      body:JSON.stringify({
-        model:"llama-3.3-70b-versatile",
-        messages:messages,
-        temperature:0.3
-      })
-    });
-
-    const data = await res.json();
-
-    const reply = data.choices[0].message.content;
-
-    addMessage(reply, "ai");
-
-    currentChat.push({role:"assistant", content:reply});
-
-  } catch(err) {
-    addMessage("حدث خطأ في الاتصال", "ai");
-  }
-}
-
-/* ===================== SHORTCUTS ===================== */
-document.getElementById("input").addEventListener("keydown", function(e){
-  if(e.key === "Enter" && !e.shiftKey) {
-    e.preventDefault();
-    sendMessage();
-  }
-});
-</script>
-
+        // دعم الإرسال عبر زر Enter
+        userInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSend();
+            }
+        });
+    </script>
 </body>
 </html>
