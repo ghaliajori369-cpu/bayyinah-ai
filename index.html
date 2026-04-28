@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>بينة - المستشار الذكي</title>
+    <title>منصة بَيّنَة</title>
     <style>
         :root { --primary: #1a3a5f; --accent: #c9a66b; }
         body { font-family: sans-serif; background: #f4f7f9; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }
@@ -32,15 +32,12 @@
 </div>
 
 <script type="module">
-// استخدمنا هنا رابطاً مباشراً للمكتبة لضمان عدم حدوث تعارض
 import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
 
-// ⚠️ ضعي مفتاحك الجديد هنا بدقة
-const API_KEY = "AIzaSyDDnwx4f6TKJQXiK1LoAhBA37hBtaHlogw"; 
+// ⚠️ استبدلي النص أدناه بمفتاحك الجديد من Google AI Studio
+const KEY = "AIzaSyDDnwx4f6TKJQXiK1LoAhBA37hBtaHlogw"; 
 
-const genAI = new GoogleGenerativeAI(API_KEY);
-
-// تحديد النموذج بنسخة مستقرة جداً
+const genAI = new GoogleGenerativeAI(KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 const btn = document.getElementById('sendBtn');
@@ -48,25 +45,27 @@ const input = document.getElementById('userInput');
 const chat = document.getElementById('chat-area');
 
 btn.onclick = async () => {
-    const text = input.value.trim();
-    if (!text) return;
+    const val = input.value.trim();
+    if (!val) return;
 
     btn.disabled = true;
     btn.innerText = "جاري التحليل...";
 
     const msg = document.createElement('div');
     msg.className = 'bubble ai';
-    msg.innerText = "⏳ جاري المعالجة...";
+    msg.innerText = "⏳ جاري المعالجة الرقمية...";
     chat.appendChild(msg);
 
     try {
-        // نطلب من الذكاء الاصطناعي الرد بصفته محامي سعودي
-        const prompt = "أنت مستشار قانوني سعودي. حلل الوقائع التالية واذكر الأنظمة والمواد ذات العلاقة: " + text;
-        const result = await model.generateContent(prompt);
+        // تم تبسيط الطلب لتجنب مشاكل الترميز
+        const result = await model.generateContent("أنت مستشار قانوني سعودي. حلل هذه الوقائع نظاماً: " + val);
         const response = await result.response;
-        msg.innerHTML = "<b>📋 التحليل:</b><br><br>" + response.text().replace(/\n/g, '<br>');
+        const text = response.text();
+        
+        msg.innerHTML = "<b>📋 التحليل النظامي:</b><br><br>" + text.replace(/\n/g, '<br>');
     } catch (e) {
-        msg.innerText = "❌ خطأ: " + e.message;
+        msg.innerText = "❌ حدث خطأ: " + e.message;
+        console.error(e);
     } finally {
         btn.disabled = false;
         btn.innerText = "تحليل الوقائع نظاماً";
