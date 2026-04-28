@@ -82,7 +82,6 @@ textarea {
   flex:1;
   padding:10px;
   font-size:16px;
-  font-family:inherit;
   resize:none;
 }
 
@@ -113,22 +112,22 @@ textarea {
 </div>
 
 <script>
+/* ================= CONFIG ================= */
 const API_KEY = "AIzaSyDDnwx4f6TKJQXiK1LoAhBA37hBtaHlogw";
 
-/* نظام التلقين */
+/* ================= PROMPT ================= */
 const SYSTEM_PROMPT = `
 أنت مستشار قانوني سعودي.
 
-التزم:
-- الأنظمة السعودية
-- تحليل دقيق
-
-قسم الرد:
+حلل الإجابة إلى:
 1) الوصف النظامي
 2) المواد القانونية
 3) التوصية
+
+كن دقيقاً ولا تؤلف.
 `;
 
+/* ================= UI ================= */
 function addMessage(text, type="user") {
   const div = document.createElement("div");
   div.className = "message " + type;
@@ -157,13 +156,14 @@ function addMessage(text, type="user") {
   document.getElementById("chat").scrollTop = 999999;
 }
 
+/* ================= PRINT ================= */
 function printText(text) {
   const w = window.open("", "", "width=800,height=600");
   w.document.write(`<pre style="font-family:Cairo">${text}</pre>`);
   w.print();
 }
 
-/* ====== هذا هو السطر الذي تم تصحيحه بالكامل ====== */
+/* ================= CORE ================= */
 async function sendMessage() {
   const input = document.getElementById("input");
   const text = input.value.trim();
@@ -183,6 +183,7 @@ async function sendMessage() {
         body: JSON.stringify({
           contents: [
             {
+              role: "user",
               parts: [
                 { text: SYSTEM_PROMPT + "\n\nالسؤال:\n" + text }
               ]
@@ -197,22 +198,39 @@ async function sendMessage() {
 
     const data = await response.json();
 
-    console.log(data); // مهم للتأكد
+    console.log("FULL RESPONSE:", data);
 
-    let reply = "لم يتم الحصول على رد";
+    /* ===== معالجة الأخطاء ===== */
+    if (data.error) {
+      addMessage("❌ خطأ من Gemini:\n" + data.error.message, "ai");
+      return;
+    }
 
-    if (data.candidates && data.candidates.length > 0) {
-      reply = data.candidates[0].content.parts[0].text;
+    let reply = "";
+
+    if (
+      data.candidates &&
+      data.candidates.length > 0 &&
+      data.candidates[0].content &&
+      data.candidates[0].content.parts
+    ) {
+      reply = data.candidates[0].content.parts
+        .map(p => p.text || "")
+        .join("\n");
+    }
+
+    if (!reply) {
+      reply = "⚠️ تم الاتصال لكن النموذج لم يرجع نصاً.";
     }
 
     addMessage(reply, "ai");
 
   } catch (error) {
-    addMessage("خطأ في الاتصال", "ai");
+    addMessage("❌ خطأ في الاتصال أو API Key", "ai");
   }
 }
 
-/* اختصارات */
+/* ================= SHORTCUT ================= */
 document.getElementById("input").addEventListener("keydown", function(e){
   if(e.key === "Enter" && !e.shiftKey){
     e.preventDefault();
