@@ -6,16 +6,18 @@
     <title>منصة بَيّنَة</title>
     <style>
         :root { --primary: #1a3a5f; --accent: #c9a66b; }
-        body { font-family: sans-serif; background: #f4f7f9; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f9; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }
         .app-container { width: 95%; max-width: 500px; background: white; height: 90vh; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); display: flex; flex-direction: column; overflow: hidden; }
-        .header { background: var(--primary); color: white; padding: 20px; text-align: center; border-bottom: 4px solid var(--accent); }
+        .header { background: var(--primary); color: white; padding: 20px; text-align: center; border-bottom: 4px solid var(--accent); font-weight: bold; font-size: 1.2rem; }
         #chat-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; background: #fafafa; }
-        .bubble { padding: 12px 16px; border-radius: 15px; font-size: 0.95rem; line-height: 1.6; max-width: 85%; }
-        .ai { background: white; border-right: 5px solid var(--primary); align-self: flex-start; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .input-area { padding: 20px; border-top: 1px solid #eee; }
-        textarea { width: 100%; height: 80px; border: 1px solid #ddd; border-radius: 12px; padding: 12px; resize: none; box-sizing: border-box; font-family: inherit; }
-        button { width: 100%; background: var(--primary); color: white; border: none; padding: 14px; border-radius: 12px; margin-top: 10px; cursor: pointer; font-weight: bold; }
-        button:disabled { background: #ccc; }
+        .bubble { padding: 12px 16px; border-radius: 15px; font-size: 0.95rem; line-height: 1.6; max-width: 85%; word-wrap: break-word; }
+        .ai { background: white; border-right: 5px solid var(--primary); align-self: flex-start; box-shadow: 0 2px 5px rgba(0,0,0,0.05); color: #333; }
+        .user { background: var(--primary); color: white; align-self: flex-end; border-radius: 15px 15px 0 15px; }
+        .input-area { padding: 20px; border-top: 1px solid #eee; background: white; }
+        textarea { width: 100%; height: 80px; border: 1px solid #ddd; border-radius: 12px; padding: 12px; resize: none; box-sizing: border-box; font-family: inherit; font-size: 1rem; }
+        button { width: 100%; background: var(--primary); color: white; border: none; padding: 14px; border-radius: 12px; margin-top: 10px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        .disclaimer { font-size: 0.7rem; color: #888; text-align: center; margin-top: 8px; }
     </style>
 </head>
 <body>
@@ -23,48 +25,86 @@
 <div class="app-container">
     <div class="header">⚖️ منصة بَيّنَة</div>
     <div id="chat-area">
-        <div class="bubble ai">مرحباً بكِ.. ضعي وقائع القضية هنا لتحليلها نظاماً.</div>
+        <div class="bubble ai">مرحباً بكِ في منصة بينة.. أنا مستشارك الذكي، ضعي وقائع القضية هنا لتحليلها بناءً على الأنظمة القانونية السعودية.</div>
     </div>
     <div class="input-area">
         <textarea id="userInput" placeholder="اكتبي الوقائع هنا..."></textarea>
         <button id="sendBtn">تحليل الوقائع نظاماً</button>
+        <div class="disclaimer">هذا التحليل تقني ولا يغني عن استشارة محامي مختص</div>
     </div>
 </div>
 
-<script type="module">
-import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
+<script>
+// ==========================================
+// ⚠️ إعدادات التطبيق
+// ==========================================
+const API_KEY = "AIzaSyDDnwx4f6TKJQXiK1LoAhBA37hBtaHlogw"; 
 
-// ⚠️ استبدلي النص أدناه بمفتاحك الجديد من Google AI Studio
-const KEY = "AIzaSyDDnwx4f6TKJQXiK1LoAhBA37hBtaHlogw"; 
-
-const genAI = new GoogleGenerativeAI(KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+// النصوص القانونية التي تريدين من التطبيق الالتزام بها (يمكنك التعديل عليها)
+const SYSTEM_INSTRUCTION = `
+أنت مستشار قانوني سعودي خبير.
+استخدم الأنظمة التالية كمرجع أساسي: (نظام المعاملات المدنية، نظام العمل، نظام الإجراءات الجزائية).
+تعليمات:
+1. ابدأ بذكر المادة النظامية المرتبطة بالواقعة.
+2. حلل النص بناءً على الأنظمة السعودية فقط.
+3. كن دقيقاً جداً في الرد.
+`;
 
 const btn = document.getElementById('sendBtn');
 const input = document.getElementById('userInput');
 const chat = document.getElementById('chat-area');
 
+// دالة إضافة الرسائل للواجهة
+function addMessage(text, isUser = false) {
+    const msg = document.createElement('div');
+    msg.className = isUser ? 'bubble user' : 'bubble ai';
+    msg.innerHTML = text;
+    chat.appendChild(msg);
+    chat.scrollTop = chat.scrollHeight;
+    return msg;
+}
+
+// معالج الإرسال
 btn.onclick = async () => {
     const val = input.value.trim();
     if (!val) return;
 
+    addMessage(val, true);
+    input.value = "";
     btn.disabled = true;
     btn.innerText = "جاري التحليل...";
 
-    const msg = document.createElement('div');
-    msg.className = 'bubble ai';
-    msg.innerText = "⏳ جاري المعالجة الرقمية...";
-    chat.appendChild(msg);
+    const loadingMsg = addMessage("⏳ جاري البحث في الأنظمة واللوائح السعودية...");
 
     try {
-        // تم تبسيط الطلب لتجنب مشاكل الترميز
-        const result = await model.generateContent("أنت مستشار قانوني سعودي. حلل هذه الوقائع نظاماً: " + val);
-        const response = await result.response;
-        const text = response.text();
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [
+                    {
+                        role: "user",
+                        parts: [{ text: SYSTEM_INSTRUCTION + "\n\n الواقعة: " + val }]
+                    }
+                ],
+                generationConfig: {
+                    temperature: 0.3,
+                    maxOutputTokens: 1500
+                }
+            })
+        });
+
+        const data = await response.json();
         
-        msg.innerHTML = "<b>📋 التحليل النظامي:</b><br><br>" + text.replace(/\n/g, '<br>');
+        if (data.error) {
+            throw new Error(data.error.message);
+        }
+
+        const aiResponse = data.candidates[0].content.parts[0].text;
+        loadingMsg.innerHTML = "<b>📋 التحليل النظامي:</b><br><br>" + aiResponse.replace(/\n/g, '<br>');
+
     } catch (e) {
-        msg.innerText = "❌ حدث خطأ: " + e.message;
+        loadingMsg.innerText = "❌ خطأ في النظام: " + e.message;
         console.error(e);
     } finally {
         btn.disabled = false;
